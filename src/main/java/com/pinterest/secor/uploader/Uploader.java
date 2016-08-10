@@ -16,21 +16,28 @@
  */
 package com.pinterest.secor.uploader;
 
-import com.google.common.base.Joiner;
-import com.pinterest.secor.common.*;
-import com.pinterest.secor.io.FileReader;
-import com.pinterest.secor.io.FileWriter;
-import com.pinterest.secor.io.KeyValue;
-import com.pinterest.secor.util.CompressionUtil;
-import com.pinterest.secor.util.IdUtil;
-import com.pinterest.secor.util.ReflectionUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import com.google.common.base.Joiner;
+import com.pinterest.secor.common.FileRegistry;
+import com.pinterest.secor.common.LogFilePath;
+import com.pinterest.secor.common.OffsetTracker;
+import com.pinterest.secor.common.SecorConfig;
+import com.pinterest.secor.common.TopicPartition;
+import com.pinterest.secor.common.ZookeeperConnector;
+import com.pinterest.secor.io.FileReader;
+import com.pinterest.secor.io.FileWriter;
+import com.pinterest.secor.io.KeyValue;
+import com.pinterest.secor.util.CompressionUtil;
+import com.pinterest.secor.util.IdUtil;
+import com.pinterest.secor.util.ReflectionUtil;
 
 /**
  * Uploader applies a set of policies to determine if any of the locally stored files should be
@@ -184,7 +191,7 @@ public class Uploader {
     private void checkTopicPartition(TopicPartition topicPartition) throws Exception {
         final long size = mFileRegistry.getSize(topicPartition);
         final long modificationAgeSec = mFileRegistry.getModificationAgeSec(topicPartition);
-        LOG.debug("size: " + size + " modificationAge: " + modificationAgeSec);
+        LOG.debug("topic: "+topicPartition.getTopic()+" partition: "+ topicPartition.getPartition()+" size: " + size + " modificationAge: " + modificationAgeSec);
         if (size >= mConfig.getMaxFileSizeBytes() ||
                 modificationAgeSec >= mConfig.getMaxFileAgeSeconds()) {
             long newOffsetCount = mZookeeperConnector.getCommittedOffsetCount(topicPartition);

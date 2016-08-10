@@ -16,16 +16,17 @@
  */
 package com.pinterest.secor.common;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
+
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.lang.StringUtils;
+
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 
 /**
  * One-stop shop for Secor configuration options.
@@ -373,6 +374,11 @@ public class SecorConfig {
         return getInt("secor.finalizer.lookback.periods", 10);
     }
 
+    public long getMaxUnparsableMessage() {
+        return getLong("message.unparsable.max", 1000);
+    }
+
+
     public String getHivePrefix() { 
         return getString("secor.hive.prefix"); 
     }
@@ -496,6 +502,10 @@ public class SecorConfig {
 
     public long getLong(String name) {
         return mProperties.getLong(name);
+    }
+
+    public long getLong(String name, int defaultValue) {
+        return mProperties.getLong(name, defaultValue);
     }
 
     public String[] getStringArray(String name) {

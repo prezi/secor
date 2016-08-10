@@ -220,6 +220,12 @@
             <groupId>org.apache.parquet</groupId>
             <artifactId>parquet-protobuf</artifactId>
             <version>1.8.1</version>
+             <exclusions>
+                <exclusion>
+                    <groupId>com.hadoop.gplcompression</groupId>
+                    <artifactId>hadoop-lzo</artifactId>
+                </exclusion>
+             </exclusions>
         </dependency>
 
         <dependency>
