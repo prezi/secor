@@ -16,16 +16,17 @@
  */
 package com.pinterest.secor.main;
 
+import java.util.LinkedList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.pinterest.secor.common.OstrichAdminService;
 import com.pinterest.secor.common.SecorConfig;
 import com.pinterest.secor.consumer.Consumer;
 import com.pinterest.secor.tools.LogFileDeleter;
 import com.pinterest.secor.util.FileUtil;
 import com.pinterest.secor.util.RateLimitUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
 
 /**
  * Secor consumer.  See
@@ -62,7 +63,7 @@ public class ConsumerMain {
             RateLimitUtil.configure(config);
             Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
                 public void uncaughtException(Thread thread, Throwable exception) {
-                    LOG.error("Thread {} failed", thread, exception);
+                        LOG.error("Thread {} failed", thread, exception);
                     System.exit(1);
                 }
             };

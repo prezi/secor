@@ -16,26 +16,26 @@
  */
 package com.pinterest.secor.consumer;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.pinterest.secor.common.FileRegistry;
 import com.pinterest.secor.common.OffsetTracker;
 import com.pinterest.secor.common.SecorConfig;
 import com.pinterest.secor.message.Message;
 import com.pinterest.secor.message.ParsedMessage;
 import com.pinterest.secor.parser.MessageParser;
-import com.pinterest.secor.transformer.MessageTransformer;
-import com.pinterest.secor.uploader.Uploader;
-import com.pinterest.secor.uploader.UploadManager;
 import com.pinterest.secor.reader.MessageReader;
+import com.pinterest.secor.transformer.MessageTransformer;
+import com.pinterest.secor.uploader.UploadManager;
+import com.pinterest.secor.uploader.Uploader;
 import com.pinterest.secor.util.ReflectionUtil;
+import com.pinterest.secor.util.StatsUtil;
 import com.pinterest.secor.writer.MessageWriter;
 
 import kafka.consumer.ConsumerTimeoutException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.Thread;
 
 /**
  * Consumer is a top-level component coordinating reading, writing, and uploading Kafka log
@@ -93,6 +93,7 @@ public class Consumer extends Thread {
         long checkMessagesPerSecond = mConfig.getMessagesPerSecond();
         long nMessages = 0;
         long lastChecked = System.currentTimeMillis();
+        long startConsume = System.currentTimeMillis();
         while (true) {
             boolean hasMoreMessages = consumeNextMessage();
             if (!hasMoreMessages) {
@@ -102,6 +103,8 @@ public class Consumer extends Thread {
             long now = System.currentTimeMillis();
             if (nMessages++ % checkMessagesPerSecond == 0 ||
                     (now - lastChecked) > checkEveryNSeconds * 1000) {
+                StatsUtil.setLabel("secor.message.in.sum", Long.toString(nMessages));
+                StatsUtil.setLabel("secor.message.in.rate", Long.toString(nMessages/((now - startConsume) / 1000)));
                 lastChecked = now;
                 checkUploadPolicy();
             }
@@ -146,9 +149,10 @@ public class Consumer extends Thread {
                 mUnparsableMessages *= DECAY;
             } catch (Throwable e) {
                 mUnparsableMessages++;
-                final double MAX_UNPARSABLE_MESSAGES = 1000.;
-                if (mUnparsableMessages > MAX_UNPARSABLE_MESSAGES) {
-                    throw new RuntimeException("Failed to parse message " + rawMessage, e);
+                StatsUtil.setLabel("secor.unparsable_messages", Double.toString(mUnparsableMessages) );
+
+                if (mConfig.getMaxUnparsableMessage() > 0 && mUnparsableMessages > mConfig.getMaxUnparsableMessage()) {
+                    throw new RuntimeException("Max unaparsable message limit was hit. Failed to parse message " + rawMessage, e);
                 }
                 LOG.warn("Failed to parse message {}", rawMessage, e);
             }
