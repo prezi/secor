@@ -16,18 +16,17 @@
  */
 package com.pinterest.secor.uploader;
 
-import com.pinterest.secor.common.*;
-import com.pinterest.secor.util.FileUtil;
-
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.Future;
+import com.pinterest.secor.common.LogFilePath;
+import com.pinterest.secor.common.SecorConfig;
+import com.pinterest.secor.util.FileUtil;
 
 /**
  * Manages uploads to S3 using the Hadoop API.
@@ -39,8 +38,11 @@ public class HadoopS3UploadManager extends UploadManager {
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(256);
 
+    private final String mSchema;
+
     public HadoopS3UploadManager(SecorConfig config) {
         super(config);
+        this.mSchema = config.getSchema();
     }
 
     public Handle<?> upload(LogFilePath localPath) throws Exception {
@@ -50,11 +52,11 @@ public class HadoopS3UploadManager extends UploadManager {
         final String logFileName;
 
         if (FileUtil.s3PathPrefixIsAltered(path.getLogFilePath(), mConfig)) {
-           logFileName = localPath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig)).getLogFilePath();
+           logFileName = localPath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig)).withoutSchema(this.mSchema).getLogFilePath();
            LOG.info("Will upload file to alternative s3 prefix path {}", logFileName);
         }
         else {
-            logFileName = path.getLogFilePath();
+            logFileName = path.withoutSchema(this.mSchema).getLogFilePath();
         }
 
         LOG.info("uploading file {} to {}", localLogFilename, logFileName);

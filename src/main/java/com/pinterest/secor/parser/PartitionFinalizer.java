@@ -16,19 +16,24 @@
  */
 package com.pinterest.secor.parser;
 
-import com.pinterest.secor.common.*;
-import com.pinterest.secor.message.Message;
-import com.pinterest.secor.util.CompressionUtil;
-import com.pinterest.secor.util.FileUtil;
-import com.pinterest.secor.util.ReflectionUtil;
-import org.apache.hadoop.io.compress.CompressionCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
+
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.pinterest.secor.common.KafkaClient;
+import com.pinterest.secor.common.LogFilePath;
+import com.pinterest.secor.common.SecorConfig;
+import com.pinterest.secor.common.TopicPartition;
+import com.pinterest.secor.common.ZookeeperConnector;
+import com.pinterest.secor.message.Message;
+import com.pinterest.secor.util.CompressionUtil;
+import com.pinterest.secor.util.FileUtil;
+import com.pinterest.secor.util.ReflectionUtil;
 
 /**
  * Partition finalizer writes _SUCCESS files to date partitions that very likely won't be receiving
@@ -46,6 +51,7 @@ public class PartitionFinalizer {
     private final QuboleClient mQuboleClient;
     private final String mFileExtension;
     private final int mLookbackPeriods;
+    private final String mSchema;
 
     public PartitionFinalizer(SecorConfig config) throws Exception {
         mConfig = config;
@@ -63,6 +69,7 @@ public class PartitionFinalizer {
             mFileExtension = "";
         }
         mLookbackPeriods = config.getFinalizerLookbackPeriods();
+        this.mSchema = config.getSchema();
         LOG.info("Lookback periods: " + mLookbackPeriods);
     }
 
@@ -100,7 +107,7 @@ public class PartitionFinalizer {
         for (int i = 0; i < mLookbackPeriods; i++) {
             LOG.info("Looking for partition: " + Arrays.toString(previous));
             LogFilePath logFilePath = new LogFilePath(prefix, topic, previous,
-                mConfig.getGeneration(), 0, 0, mFileExtension);
+                mConfig.getGeneration(), 0, 0, mFileExtension).withoutSchema(this.mSchema);
 
             if (FileUtil.s3PathPrefixIsAltered(logFilePath.getLogFilePath(), mConfig)) {
                 logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig));
