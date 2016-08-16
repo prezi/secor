@@ -16,18 +16,17 @@
  */
 package com.pinterest.secor.uploader;
 
-import com.pinterest.secor.common.*;
-import com.pinterest.secor.util.FileUtil;
-
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.Future;
+import com.pinterest.secor.common.LogFilePath;
+import com.pinterest.secor.common.SecorConfig;
+import com.pinterest.secor.util.FileUtil;
 
 /**
  * Manages uploads to S3 using the Hadoop API.
@@ -38,6 +37,7 @@ public class HadoopS3UploadManager extends UploadManager {
     private static final Logger LOG = LoggerFactory.getLogger(HadoopS3UploadManager.class);
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(256);
+
     private final String mSchema;
 
     public HadoopS3UploadManager(SecorConfig config) {

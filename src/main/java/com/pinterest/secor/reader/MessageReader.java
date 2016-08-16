@@ -16,6 +16,16 @@
  */
 package com.pinterest.secor.reader;
 
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.pinterest.secor.common.OffsetTracker;
 import com.pinterest.secor.common.SecorConfig;
 import com.pinterest.secor.common.TopicPartition;
@@ -23,24 +33,16 @@ import com.pinterest.secor.message.Message;
 import com.pinterest.secor.util.IdUtil;
 import com.pinterest.secor.util.RateLimitUtil;
 import com.pinterest.secor.util.StatsUtil;
+
+import kafka.consumer.Blacklist;
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.consumer.TopicFilter;
 import kafka.consumer.Whitelist;
-import kafka.consumer.Blacklist;
 import kafka.javaapi.consumer.ConsumerConnector;
 import kafka.message.MessageAndMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Message reader consumer raw Kafka messages.
@@ -172,6 +174,8 @@ public class MessageReader {
         long committedOffsetCount = mOffsetTracker.getTrueCommittedOffsetCount(topicPartition);
         LOG.debug("read message {}", message);
         if (mNMessages % mCheckMessagesPerSecond == 0) {
+            StatsUtil.setLabel("secor.offset.committed."+topicPartition.getTopic()+"_"+topicPartition.getPartition(), Long.toString(committedOffsetCount));
+            StatsUtil.setLabel("secor.offset.processed."+topicPartition.getTopic()+"_"+topicPartition.getPartition(), Long.toString(kafkaMessage.offset()));
             exportStats();
         }
         if (message.getOffset() < committedOffsetCount) {

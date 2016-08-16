@@ -16,8 +16,20 @@
  */
 package com.pinterest.secor.common;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.net.HostAndPort;
 import com.pinterest.secor.message.Message;
+import com.pinterest.secor.util.StatsUtil;
+
 import kafka.api.FetchRequestBuilder;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
@@ -30,15 +42,6 @@ import kafka.javaapi.TopicMetadataRequest;
 import kafka.javaapi.TopicMetadataResponse;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.message.MessageAndOffset;
-import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Kafka client encapsulates the logic interacting with Kafka brokers.
@@ -127,6 +130,8 @@ public class KafkaClient {
             throw new RuntimeException("Error fetching offset data. Reason: " +
                     response.errorCode(topicPartition.getTopic(), topicPartition.getPartition()));
         }
+        StatsUtil.setLabel("current.offset."+topicPartition.getTopic()+"."+topicPartition.getPartition(),Long.toString(offset));
+
         MessageAndOffset messageAndOffset = response.messageSet(
                 topicPartition.getTopic(), topicPartition.getPartition()).iterator().next();
         byte[] keyBytes = null;

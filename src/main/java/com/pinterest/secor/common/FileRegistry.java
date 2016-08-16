@@ -16,17 +16,20 @@
  */
 package com.pinterest.secor.common;
 
-import com.pinterest.secor.io.FileWriter;
-import com.pinterest.secor.util.FileUtil;
-import com.pinterest.secor.util.ReflectionUtil;
-import com.pinterest.secor.util.StatsUtil;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
+import com.pinterest.secor.io.FileWriter;
+import com.pinterest.secor.util.FileUtil;
+import com.pinterest.secor.util.ReflectionUtil;
+import com.pinterest.secor.util.StatsUtil;
 
 /**
  * FileRegistry keeps track of local log files currently being appended to and the associated
@@ -118,6 +121,8 @@ public class FileRegistry {
             FileUtil.deleteOnExit(path.getLogFileDir());
             FileUtil.deleteOnExit(path.getLogFilePath());
             FileUtil.deleteOnExit(path.getLogFileCrcPath());
+            StatsUtil.setLabel("secor.topic.lastcreatedpath."+topicPartition.getTopic()+"."+topicPartition.getPartition(), path.getLogFileDir());
+            StatsUtil.setLabel("secor.topic.lastcreateddate"+topicPartition.getTopic()+"."+topicPartition.getPartition(), Long.toString(mCreationTimes.get(path)));
         }
         return writer;
     }
