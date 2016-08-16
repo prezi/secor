@@ -69,7 +69,7 @@ public class PartitionFinalizer {
             mFileExtension = "";
         }
         mLookbackPeriods = config.getFinalizerLookbackPeriods();
-        this.mSchema = config.getSchema();
+        mSchema = config.getSchema();
         LOG.info("Lookback periods: " + mLookbackPeriods);
     }
 
@@ -107,7 +107,7 @@ public class PartitionFinalizer {
         for (int i = 0; i < mLookbackPeriods; i++) {
             LOG.info("Looking for partition: " + Arrays.toString(previous));
             LogFilePath logFilePath = new LogFilePath(prefix, topic, previous,
-                mConfig.getGeneration(), 0, 0, mFileExtension).withoutSchema(this.mSchema);
+                mConfig.getGeneration(), 0, 0, mFileExtension).withoutSchema(mSchema);
 
             if (FileUtil.s3PathPrefixIsAltered(logFilePath.getLogFilePath(), mConfig)) {
                 logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig));

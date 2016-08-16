@@ -42,7 +42,7 @@ public class HadoopS3UploadManager extends UploadManager {
 
     public HadoopS3UploadManager(SecorConfig config) {
         super(config);
-        this.mSchema = config.getSchema();
+        mSchema = config.getSchema();
     }
 
     public Handle<?> upload(LogFilePath localPath) throws Exception {
@@ -52,11 +52,11 @@ public class HadoopS3UploadManager extends UploadManager {
         final String logFileName;
 
         if (FileUtil.s3PathPrefixIsAltered(path.getLogFilePath(), mConfig)) {
-           logFileName = localPath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig)).withoutSchema(this.mSchema).getLogFilePath();
+           logFileName = localPath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig)).withoutSchema(mSchema).getLogFilePath();
            LOG.info("Will upload file to alternative s3 prefix path {}", logFileName);
         }
         else {
-            logFileName = path.withoutSchema(this.mSchema).getLogFilePath();
+            logFileName = path.withoutSchema(mSchema).getLogFilePath();
         }
 
         LOG.info("uploading file {} to {}", localLogFilename, logFileName);
