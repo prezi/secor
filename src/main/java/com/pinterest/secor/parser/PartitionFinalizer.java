@@ -186,7 +186,7 @@ public class PartitionFinalizer {
 
             // Generate the SUCCESS file at the end
             LogFilePath logFilePath = new LogFilePath(prefix, topic, current,
-                mConfig.getGeneration(), 0, 0, mFileExtension);
+                mConfig.getGeneration(), 0, 0, mFileExtension).withoutSchema(mSchema);
 
             if (FileUtil.s3PathPrefixIsAltered(logFilePath.getLogFilePath(), mConfig)) {
                 logFilePath = logFilePath.withPrefix(FileUtil.getS3AlternativePrefix(mConfig));
